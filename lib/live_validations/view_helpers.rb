@@ -3,10 +3,10 @@ module LiveValidations
     def self.included(base)
       base.alias_method_chain :form_for, :live_validations
     end
-    
+
     def form_for_with_live_validations(record_name_or_array, *args, &block)
       options = args.extract_options!
-      
+
       if options[:live_validations]
         record = case record_name_or_array
         when Array
@@ -26,7 +26,7 @@ module LiveValidations
 
         self.adapter_instance = LiveValidations.current_adapter.new(record)
         adapter_instance.handle_form_for_options(options)
-        
+
         if adapter_instance.alters_tag_attributes?
           adapter_instance.run_validations
           form_for_without_live_validations(record_name_or_array, *(args << options), &block)
@@ -34,21 +34,21 @@ module LiveValidations
           form_for_without_live_validations(record_name_or_array, *(args << options), &block)
           adapter_instance.run_validations
         end
-        
+
         # You don't have to pass block.binding to concat anymore. I'm leaving it in until it gets removed
         # though, so that the plugin can be used with older rails versions that still requires a binding.
         ActiveSupport::Deprecation.silence do
-          concat(%{<script type="text/javascript">#{adapter_instance.render_inline_javascript}</script>}, block.binding) if adapter_instance.utilizes_inline_javascript?
+          concat(raw(%{<script type="text/javascript">#{adapter_instance.render_inline_javascript}</script>}), block.binding) if adapter_instance.utilizes_inline_javascript?
         end
       else
         form_for_without_live_validations(record_name_or_array, *(args << options), &block)
       end
     end
-    
+
     def adapter_instance=(record)
       @_adapter_instance = record
     end
-    
+
     def adapter_instance
       @_adapter_instance
     end
